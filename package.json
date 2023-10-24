@@ -14,7 +14,7 @@
     "mongoose": "^5.11.15"
   },
   "repository": {
-    "url": "https://github.com/kandoruus/exercisetracker.git"
+    "url": "https://github.com/kandoruus/task-management-app-backend.git"
   },
   "license": "MIT",
   "keywords": [
