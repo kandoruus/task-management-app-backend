@@ -42,6 +42,23 @@ const createNewTask = async (inputs) => {
   )._id;
 };
 
+const updateTask = async (inputs) => {
+  let { id, name, description, status, priority } = inputs;
+  status = status === "" ? "Not Started" : status;
+  priority = priority === "" ? "Low" : priority;
+
+  if (
+    (await Task.findByIdAndUpdate(id, {
+      name: name,
+      description: description,
+      status: status,
+      priority: priority,
+    })) === null
+  ) {
+    throw new Error(id + " is not a valid id");
+  }
+};
+
 app.post("/api/task", async (req, res) => {
   try {
     res.json({
@@ -49,6 +66,17 @@ app.post("/api/task", async (req, res) => {
     });
   } catch (e) {
     res.json({ message: "Error saving the task named '" + req.body.name + "': " + e.toString() });
+  }
+});
+
+app.post("/api/updatetask", async (req, res) => {
+  try {
+    await updateTask(req.body);
+    res.json({
+      message: "Task " + req.body.id + " updated successfully!",
+    });
+  } catch (e) {
+    res.json({ message: "Error updating the task with id '" + req.body.id + "': " + e.toString() });
   }
 });
 
@@ -74,6 +102,22 @@ app.get("/api/task/:id", async (req, res) => {
     }
   } catch (e) {
     res.json({ message: "Error fetching task '" + req.params.id + "': " + e.toString() });
+  }
+});
+
+app.get("/api/tasklist", async (req, res) => {
+  try {
+    res.json(await Task.find({}));
+  } catch (e) {
+    res.json({ message: "Error fetching tasklist: " + e.toString() });
+  }
+});
+
+app.get("/api/cleartasks", async (req, res) => {
+  try {
+    res.json({ message: (await Task.remove({})).n + " task(s) removed." });
+  } catch (e) {
+    res.json({ message: "Error removing tasklist: " + e.toString() });
   }
 });
 
