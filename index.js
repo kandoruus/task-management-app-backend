@@ -12,15 +12,10 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 const taskSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: String,
   description: String,
-  status: { type: String, required: true },
-  priority: { type: String, required: true },
-  startDate: Date,
-  dueDate: { type: Date, required: true },
-  completionDate: Date,
-  estTime: { type: Number, required: true },
-  actTime: Number,
+  status: String,
+  priority: String,
 });
 
 const Task = mongoose.model("Task", taskSchema);
@@ -33,11 +28,9 @@ app.get("/", (req, res) => {
 });
 
 const createNewTask = async (inputs) => {
-  let { name, description, status, priority, startDate, dueDate, estTime } = inputs;
-  startDate = startDate === "" ? Date.now() : startDate;
+  let { name, description, status, priority } = inputs;
   status = status === "" ? "Not Started" : status;
   priority = priority === "" ? "Low" : priority;
-  estTime = estTime === "" ? 40 : estTime;
 
   return (
     await Task.create({
@@ -45,11 +38,6 @@ const createNewTask = async (inputs) => {
       description: description,
       status: status,
       priority: priority,
-      startDate: new Date(startDate),
-      dueDate: new Date(dueDate),
-      completionDate: null,
-      estTime: Number(estTime),
-      actTime: 0,
     })
   )._id;
 };
