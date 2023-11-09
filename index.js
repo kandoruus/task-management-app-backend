@@ -12,10 +12,7 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 const taskSchema = new mongoose.Schema({
-  name: String,
-  description: String,
-  status: String,
-  priority: String,
+  data: { name: String, description: String, status: String, priority: String },
 });
 
 const Task = mongoose.model("Task", taskSchema);
@@ -27,36 +24,44 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/src/pages/index.html");
 });
 
-const createNewTask = async (inputs) => {
+const getDataFromInputs = (inputs) => {
   let { name, description, status, priority } = inputs;
   status = status === "" ? "Not Started" : status;
   priority = priority === "" ? "Low" : priority;
+  return {
+    name: name,
+    description: description,
+    status: status,
+    priority: priority,
+  };
+};
 
-  return (
-    await Task.create({
-      name: name,
-      description: description,
-      status: status,
-      priority: priority,
-    })
-  )._id;
+const createNewTask = async (inputs) => {
+  return (await Task.create({ data: getDataFromInputs(inputs) }))._id;
 };
 
 const updateTask = async (inputs) => {
-  let { id, name, description, status, priority } = inputs;
-  status = status === "" ? "Not Started" : status;
-  priority = priority === "" ? "Low" : priority;
-
+  let id = inputs.id;
   if (
     (await Task.findByIdAndUpdate(id, {
-      name: name,
-      description: description,
-      status: status,
-      priority: priority,
+      data: getDataFromInputs(inputs),
     })) === null
   ) {
     throw new Error(id + " is not a valid id");
   }
+};
+
+const updateManyTasks = async (tasksToSave) => {
+  let idList = tasksToSave.map((task) => task._id);
+  let taskDocsToUpdate = (await Task.find({}))
+    .map((taskDoc) => {
+      return { oldDoc: taskDoc, idx: idList.indexOf(String(taskDoc._id)) };
+    })
+    .filter((taskDoc) => taskDoc.idx != -1)
+    .map((taskDoc) => {
+      return Object.assign(taskDoc.oldDoc, { data: { ...tasksToSave[taskDoc.idx].data } });
+    });
+  return await Task.bulkSave(taskDocsToUpdate);
 };
 
 app.post("/api/task", async (req, res) => {
@@ -80,6 +85,14 @@ app.post("/api/updatetask", async (req, res) => {
   }
 });
 
+app.post("/api/updatemanytasks", async (req, res) => {
+  try {
+    res.json(await updateManyTasks(JSON.parse(req.body.tasklist)));
+  } catch (e) {
+    res.json({ message: "Error saving tasks': " + e.toString() });
+  }
+});
+
 app.get("/api/removetask/:id", async (req, res) => {
   try {
     if (await Task.findByIdAndRemove(req.params.id)) {
@@ -94,9 +107,9 @@ app.get("/api/removetask/:id", async (req, res) => {
 
 app.get("/api/task/:id", async (req, res) => {
   try {
-    let taskObj = await Task.findById(req.params.id);
-    if (taskObj) {
-      res.json(taskObj);
+    let taskDoc = await Task.findById(req.params.id);
+    if (taskDoc) {
+      res.json(taskDoc);
     } else {
       res.json({ message: "No task found match id: '" + req.params.id + "'" });
     }
@@ -115,9 +128,9 @@ app.get("/api/tasklist", async (req, res) => {
 
 app.get("/api/cleartasks", async (req, res) => {
   try {
-    res.json({ message: (await Task.remove({})).n + " task(s) removed." });
+    res.json({ message: (await Task.deleteMany({})).n + " task(s) removed." });
   } catch (e) {
-    res.json({ message: "Error removing tasklist: " + e.toString() });
+    res.json({ message: "Error clearing tasklist: " + e.toString() });
   }
 });
 
