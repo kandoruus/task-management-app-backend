@@ -67,7 +67,8 @@ const updateManyTasks = async (tasksToSave) => {
 app.post("/api/task", async (req, res) => {
   try {
     res.json({
-      message: req.body.name + " saved successfully! id: " + (await createNewTask(req.body)),
+      message: req.body.name + " saved successfully!",
+      id: await createNewTask(req.body),
     });
   } catch (e) {
     res.json({ message: "Error saving the task named '" + req.body.name + "': " + e.toString() });
