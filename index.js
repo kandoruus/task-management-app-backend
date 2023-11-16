@@ -25,7 +25,7 @@ app.get("/", (req, res) => {
 });
 
 const getDataFromInputs = (inputs) => {
-  let { name, description, status, priority } = inputs.data;
+  let { name, description, status, priority } = JSON.parse(inputs.data);
   status = status === "" ? "Not Started" : status;
   priority = priority === "" ? "Low" : priority;
   return {
