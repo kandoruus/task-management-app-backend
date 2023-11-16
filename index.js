@@ -41,7 +41,7 @@ const createNewTask = async (inputs) => {
 };
 
 const updateTask = async (inputs) => {
-  let id = inputs.id;
+  let id = inputs._id;
   if (
     (await Task.findByIdAndUpdate(id, {
       data: getDataFromInputs(inputs),
