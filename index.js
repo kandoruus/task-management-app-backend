@@ -82,7 +82,7 @@ app.post("/api/updatetask", async (req, res) => {
       message: "Task " + req.body.id + " updated successfully!",
     });
   } catch (e) {
-    res.json({ message: "Error updating the task with id '" + req.body.id + "': " + e.toString() });
+    res.json({ error: "Error updating the task with id '" + req.body.id + "': " + e.toString() });
   }
 });
 
