@@ -91,11 +91,6 @@ describe("Task Management API", () => {
     expect(res.body.message).toBe("Task " + idToUpdate + " updated successfully!");
   });
   it("responds to post requests at /api/updatemanytasks with an appropriate message object", async () => {
-    const dataToUpdate = {
-      ...mockTaskData,
-      name: "Updated Name",
-    };
-    const idToUpdate = tasksToPreloadToDB[0]._id.toString();
     const res = await request(app)
       .post("/api/updatemanytasks")
       .set("Content-Type", "application/x-www-form-urlencoded")
