@@ -1,6 +1,6 @@
-const app = require("./src/app/app");
+const { app } = require("./src/app/app");
 const mongoose = require("mongoose");
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI_APP, {
   useUnifiedTopology: true,
   useNewUrlParser: true,
   useFindAndModify: false,

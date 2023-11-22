@@ -61,7 +61,7 @@ const updateManyTasks = async (tasksToSave) => {
 app.post("/api/task", async (req, res) => {
   try {
     res.json({
-      message: req.body.name + " saved successfully!",
+      message: JSON.parse(req.body.data).name + " saved successfully!",
       id: await createNewTask(req.body),
     });
   } catch (e) {
@@ -73,10 +73,10 @@ app.post("/api/updatetask", async (req, res) => {
   try {
     await updateTask(req.body);
     res.json({
-      message: "Task " + req.body.id + " updated successfully!",
+      message: "Task " + req.body._id + " updated successfully!",
     });
   } catch (e) {
-    res.json({ error: "Error updating the task with id '" + req.body.id + "': " + e.toString() });
+    res.json({ error: "Error updating the task with id '" + req.body._id + "': " + e.toString() });
   }
 });
 
@@ -129,4 +129,4 @@ app.get("/api/cleartasks", async (req, res) => {
   }
 });
 
-module.exports = app;
+module.exports = { app, Task };
