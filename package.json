@@ -4,13 +4,14 @@
   "description": "A REST API for task management app",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "cross-env NODE_ENV=test jest --testTimeout=5000"
   },
   "dependencies": {
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.16.4",
-    "cors": "^2.8.5",
-    "body-parser": "^1.19.0",
     "mongoose": "^5.11.15"
   },
   "repository": {
@@ -20,5 +21,13 @@
   "keywords": [
     "node",
     "express"
-  ]
+  ],
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "cross-env": "^7.0.3",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node"
+  }
 }
