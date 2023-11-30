@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const { ObjectID } = require("mongodb");
 const request = require("supertest");
-const { app, Task } = require("../app/app");
+const { app, Task } = require("../app/tasks");
 require("dotenv").config();
 
 const tasksToPreloadToDB = [
