@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const { ObjectID } = require("mongodb");
 const request = require("supertest");
-const { app, Task } = require("../app/tasks");
+const app = require("task-api");
+const Task = require("mongoose-models/Task");
 require("dotenv").config();
 
 const tasksToPreloadToDB = [
@@ -43,46 +44,43 @@ const mockTaskData = {
   priority: "Low",
 };
 
-beforeAll(async () => {
-  await mongoose.connect(process.env.MONGO_URI_TEST, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-  });
-  await Task.deleteMany({});
-});
-
-beforeEach(async () => {
-  for (let i = 0; i < tasksToPreloadToDB.length; i++) {
-    await Task.create(tasksToPreloadToDB[i]);
-  }
-});
-afterEach(async () => {
-  await Task.deleteMany({});
-});
-
-afterAll(async () => {
-  await mongoose.connection.close();
-});
-
 describe("Task Management API", () => {
-  it("responds to post requests at /api/task with an appropriate message and task id", async () => {
+  beforeAll(async () => {
+    await mongoose.connect(process.env.MONGO_URI_TEST, {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      useFindAndModify: false,
+      useCreateIndex: true,
+    });
+    await Task.deleteMany({});
+  });
+  beforeEach(async () => {
+    for (let i = 0; i < tasksToPreloadToDB.length; i++) {
+      await Task.create(tasksToPreloadToDB[i]);
+    }
+  });
+  afterEach(async () => {
+    await Task.deleteMany({});
+  });
+  afterAll(async () => {
+    await mongoose.connection.close();
+  });
+  it("responds to post requests at /task-api/task with an appropriate message and task id", async () => {
     const res = await request(app)
-      .post("/api/task")
+      .post("/task-api/task")
       .set("Content-Type", "application/x-www-form-urlencoded")
       .send({ data: JSON.stringify(mockTaskData) });
     expect(res.body.message).toBe(mockTaskData.name + " saved successfully!");
     expect(res.body.id).toBeTruthy();
   });
-  it("responds to post requests at /api/updatetask with an appropriate message", async () => {
+  it("responds to post requests at /task-api/updatetask with an appropriate message", async () => {
     const dataToUpdate = {
       ...mockTaskData,
       name: "Updated Name",
     };
     const idToUpdate = tasksToPreloadToDB[0]._id.toString();
     const res = await request(app)
-      .post("/api/updatetask")
+      .post("/task-api/updatetask")
       .set("Content-Type", "application/x-www-form-urlencoded")
       .send({
         _id: idToUpdate,
@@ -90,9 +88,9 @@ describe("Task Management API", () => {
       });
     expect(res.body.message).toBe("Task " + idToUpdate + " updated successfully!");
   });
-  it("responds to post requests at /api/updatemanytasks with an appropriate message object", async () => {
+  it("responds to post requests at /task-api/updatemanytasks with an appropriate message object", async () => {
     const res = await request(app)
-      .post("/api/updatemanytasks")
+      .post("/task-api/updatemanytasks")
       .set("Content-Type", "application/x-www-form-urlencoded")
       .send({
         tasklist: JSON.stringify(
@@ -109,31 +107,31 @@ describe("Task Management API", () => {
     expect(res.body.nMatched).toBe(3);
     expect(res.body.nModified).toBe(3);
   });
-  it("responds to get requests at /api/removetask/:id with an appropriate message", async () => {
+  it("responds to get requests at /task-api/removetask/:id with an appropriate message", async () => {
     const idToRemove = tasksToPreloadToDB[0]._id.toString();
     const res = await request(app)
-      .get("/api/removetask/" + idToRemove)
+      .get("/task-api/removetask/" + idToRemove)
       .set("Content-Type", "application/x-www-form-urlencoded");
     const res2 = await request(app)
-      .get("/api/removetask/" + idToRemove)
+      .get("/task-api/removetask/" + idToRemove)
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body.message).toBe(idToRemove + " deleted successfully!");
     expect(res2.body.message).toBe(idToRemove + " was not found.");
   });
-  it("responds to get requests at /api/task/:id with an appropriate message or task object", async () => {
+  it("responds to get requests at /task-api/task/:id with an appropriate message or task object", async () => {
     const idToGet = tasksToPreloadToDB[0]._id.toString();
     const invalidIdToGet = "655e5b359862131b75591e64";
     const expectedRes = { ...tasksToPreloadToDB[0], _id: idToGet };
     const res = await request(app)
-      .get("/api/task/" + idToGet)
+      .get("/task-api/task/" + idToGet)
       .set("Content-Type", "application/x-www-form-urlencoded");
     const res2 = await request(app)
-      .get("/api/task/" + invalidIdToGet)
+      .get("/task-api/task/" + invalidIdToGet)
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body).toEqual(expectedRes);
     expect(res2.body.message).toBe("No task found match id: '" + invalidIdToGet + "'");
   });
-  it("responds to get requests at /api/tasklist with an array of all tasks in the db", async () => {
+  it("responds to get requests at /task-api/tasklist with an array of all tasks in the db", async () => {
     const expectedRes = tasksToPreloadToDB.map((task) => {
       return {
         data: { ...task.data },
@@ -142,13 +140,13 @@ describe("Task Management API", () => {
       };
     });
     const res = await request(app)
-      .get("/api/tasklist")
+      .get("/task-api/tasklist")
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body).toEqual(expectedRes);
   });
-  it("responds to get requests at /api/cleartasks with an appropriate message", async () => {
+  it("responds to get requests at /task-api/cleartasks with an appropriate message", async () => {
     const res = await request(app)
-      .get("/api/cleartasks")
+      .get("/task-api/cleartasks")
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body.message).toEqual(tasksToPreloadToDB.length + " task(s) removed.");
     expect(await Task.find({})).toEqual([]);

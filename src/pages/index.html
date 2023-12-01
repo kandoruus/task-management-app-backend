@@ -10,32 +10,41 @@
   <body>
     <div class="container">
       <h1>Task Management App</h1>
-      <form action="/api/task" method="post">
-        <h3>Create a New Task</h3>
-        <input id="task-name" type="text" name="name" placeholder="name" required />
-        <input id="task-desc" type="text" name="description" placeholder="description" />
-        <input id="task-status" type="text" name="status" placeholder="status" />
-        <input id="task-prio" type="text" name="priority" placeholder="priority" />
+      <form action="/user-api/signup" method="post">
+        <h3>Create a New User</h3>
+        <input id="user-username" type="text" name="username" placeholder="username" required />
+        <input id="user-password" type="text" name="password" placeholder="password" required />
         <input type="submit" value="Submit" />
       </form>
-      <form action="/api/updatetask" method="post">
-        <h3>Update a Task</h3>
-        <input id="task-id1" type="text" name="id" placeholder="id" required />
-        <input id="task-name1" type="text" name="name" placeholder="name" required />
-        <input id="task-desc1" type="text" name="description" placeholder="description" />
-        <input id="task-status1" type="text" name="status" placeholder="status" />
-        <input id="task-prio1" type="text" name="priority" placeholder="priority" />
+      <form action="/user-api/login" method="post">
+        <h3>Login</h3>
+        <input id="user-username" type="text" name="username" placeholder="username" required />
+        <input id="user-password" type="text" name="password" placeholder="password" required />
         <input type="submit" value="Submit" />
       </form>
-      <form action="/api/updatemanytasks" method="post">
-        <h3>Update Many Tasks</h3>
+      <form action="/user-api/change-password" method="post">
+        <h3>Change Password</h3>
+        <input id="user-username" type="text" name="username" placeholder="username" required />
         <input
-          id="tasklist"
+          id="user-old-password"
           type="text"
-          name="tasklist"
-          readonly
-          value='[{"_id":"654d399c8436083cc356886c","data":{"name":"Test 1","description":"BulkSave with post","status":"Not Started","priority":"Low"},"__v":0},{"_id":"654d3fd5a10ed63e8a1f29c7","data":{"name":"Test Task 47","description":"foobar","status":"Not Started","priority":"Low"},"__v":0}]'
+          name="oldPassword"
+          placeholder="old password"
+          required
         />
+        <input
+          id="user-new-password"
+          type="text"
+          name="newPassword"
+          placeholder="new password"
+          required
+        />
+        <input type="submit" value="Submit" />
+      </form>
+      <form action="/user-api/delete-account" method="post">
+        <h3>Delete account</h3>
+        <input id="user-username" type="text" name="username" placeholder="username" required />
+        <input id="user-password" type="text" name="password" placeholder="password" required />
         <input type="submit" value="Submit" />
       </form>
     </div>

@@ -2,10 +2,10 @@
   "name": "task-management-app-backend",
   "version": "0.1.0",
   "description": "A REST API for task management app",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "cross-env NODE_ENV=test jest --testTimeout=5000"
+    "start": "NODE_PATH=src/app node app.js",
+    "test": "cross-env NODE_PATH=src/app NODE_ENV=test jest --testTimeout=5000"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -23,8 +23,8 @@
     "express"
   ],
   "devDependencies": {
-    "jest": "^29.7.0",
     "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
     "supertest": "^6.3.3"
   },
   "jest": {

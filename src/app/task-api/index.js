@@ -1,22 +1,13 @@
 const express = require("express");
-const app = express();
+const app = (module.exports = express());
 const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
-const mongoose = require("mongoose");
-
-const taskSchema = new mongoose.Schema({
-  data: { name: String, description: String, status: String, priority: String },
-});
-
-const Task = mongoose.model("Task", taskSchema);
+const Task = require("mongoose-models/Task");
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/src/pages/index.html");
-});
 
 const getDataFromInputs = (inputs) => {
   let { name, description, status, priority } = JSON.parse(inputs.data);
@@ -58,7 +49,7 @@ const updateManyTasks = async (tasksToSave) => {
   return await Task.bulkSave(taskDocsToUpdate);
 };
 
-app.post("/api/task", async (req, res) => {
+app.post("/task-api/task", async (req, res) => {
   try {
     res.json({
       message: JSON.parse(req.body.data).name + " saved successfully!",
@@ -69,7 +60,7 @@ app.post("/api/task", async (req, res) => {
   }
 });
 
-app.post("/api/updatetask", async (req, res) => {
+app.post("/task-api/updatetask", async (req, res) => {
   try {
     await updateTask(req.body);
     res.json({
@@ -80,7 +71,7 @@ app.post("/api/updatetask", async (req, res) => {
   }
 });
 
-app.post("/api/updatemanytasks", async (req, res) => {
+app.post("/task-api/updatemanytasks", async (req, res) => {
   try {
     res.json(await updateManyTasks(JSON.parse(req.body.tasklist)));
   } catch (e) {
@@ -88,7 +79,7 @@ app.post("/api/updatemanytasks", async (req, res) => {
   }
 });
 
-app.get("/api/removetask/:id", async (req, res) => {
+app.get("/task-api/removetask/:id", async (req, res) => {
   try {
     if (await Task.findByIdAndRemove(req.params.id)) {
       res.json({ message: req.params.id + " deleted successfully!" });
@@ -100,7 +91,7 @@ app.get("/api/removetask/:id", async (req, res) => {
   }
 });
 
-app.get("/api/task/:id", async (req, res) => {
+app.get("/task-api/task/:id", async (req, res) => {
   try {
     let taskDoc = await Task.findById(req.params.id);
     if (taskDoc) {
@@ -113,7 +104,7 @@ app.get("/api/task/:id", async (req, res) => {
   }
 });
 
-app.get("/api/tasklist", async (req, res) => {
+app.get("/task-api/tasklist", async (req, res) => {
   try {
     res.json(await Task.find({}));
   } catch (e) {
@@ -121,12 +112,10 @@ app.get("/api/tasklist", async (req, res) => {
   }
 });
 
-app.get("/api/cleartasks", async (req, res) => {
+app.get("/task-api/cleartasks", async (req, res) => {
   try {
     res.json({ message: (await Task.deleteMany({})).n + " task(s) removed." });
   } catch (e) {
     res.json({ message: "Error clearing tasklist: " + e.toString() });
   }
 });
-
-module.exports = { app, Task };
