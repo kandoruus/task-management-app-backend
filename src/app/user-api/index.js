@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const User = require("mongoose-models/User");
+const { validateSession } = require("helper/functions");
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -24,6 +25,7 @@ app.post("/user-api/signup", async (req, res) => {
     let newUser = new User();
     newUser.username = username;
     newUser.password = password;
+    newUser.sessionCode = "";
     newUser.setPassword(password);
     newUser.save((err, User) => {
       if (err) {
@@ -45,15 +47,53 @@ app.post("/user-api/login", async (req, res) => {
     if (user === null) {
       return res.status(400).send({ message: "The username or password is incorrect." });
     } else if (user.validPassword(password)) {
-      return res.status(201).send({ message: "Welcome " + username + "!", username: username });
+      user.setSessionCode();
+      user.save((err, user) => {
+        if (err) {
+          return res.status(400).send({
+            message: "Server Error: Failed to create login session for " + username + ".",
+          });
+        } else {
+          return res.status(201).send({
+            message: "Welcome " + username + "!",
+            username: username,
+            sessionCode: user.sessionCode,
+          });
+        }
+      });
     } else {
       return res.status(400).send({ message: "The username or password is incorrect." });
     }
   });
 });
 
+//Validate a logout attempt
+app.post("/user-api/logout", validateSession, async (req, res) => {
+  const { username } = req.body;
+  User.findOne({ username: username }, function (err, user) {
+    if (user === null) {
+      return res
+        .status(400)
+        .send({ message: "No account named: " + username + " could not be found." });
+    } else {
+      user.sessionCode = "";
+      user.save((err, user) => {
+        if (err) {
+          return res.status(400).send({
+            message: "Server Error: Session failed to end.",
+          });
+        } else {
+          return res.status(201).send({
+            message: "Session ended.",
+          });
+        }
+      });
+    }
+  });
+});
+
 //change password
-app.post("/user-api/change-password", async (req, res) => {
+app.post("/user-api/change-password", validateSession, async (req, res) => {
   const { username, oldPassword, newPassword } = req.body;
   User.findOne({ username: username }, function (err, user) {
     if (user === null) {
@@ -76,7 +116,7 @@ app.post("/user-api/change-password", async (req, res) => {
 });
 
 //delete user
-app.post("/user-api/delete-account", async (req, res) => {
+app.post("/user-api/delete-account", validateSession, async (req, res) => {
   const { username, password } = req.body;
   User.findOne({ username: username }, function (err, user) {
     if (user === null) {

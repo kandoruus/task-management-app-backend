@@ -4,10 +4,12 @@ const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const Task = require("mongoose-models/Task");
+const { validateSession } = require("helper/functions");
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
+app.use("/task-api", validateSession);
 
 const getDataFromInputs = (inputs) => {
   let { name, description, status, priority } = JSON.parse(inputs.data);
@@ -79,7 +81,7 @@ app.post("/task-api/updatemanytasks", async (req, res) => {
   }
 });
 
-app.get("/task-api/removetask/:id", async (req, res) => {
+app.post("/task-api/removetask/:id", async (req, res) => {
   try {
     if (await Task.findByIdAndRemove(req.params.id)) {
       res.json({ message: req.params.id + " deleted successfully!" });
@@ -91,7 +93,7 @@ app.get("/task-api/removetask/:id", async (req, res) => {
   }
 });
 
-app.get("/task-api/task/:id", async (req, res) => {
+app.post("/task-api/task/:id", async (req, res) => {
   try {
     let taskDoc = await Task.findById(req.params.id);
     if (taskDoc) {
@@ -104,7 +106,7 @@ app.get("/task-api/task/:id", async (req, res) => {
   }
 });
 
-app.get("/task-api/tasklist", async (req, res) => {
+app.post("/task-api/tasklist", async (req, res) => {
   try {
     res.json(await Task.find({}));
   } catch (e) {
@@ -112,7 +114,7 @@ app.get("/task-api/tasklist", async (req, res) => {
   }
 });
 
-app.get("/task-api/cleartasks", async (req, res) => {
+app.post("/task-api/cleartasks", async (req, res) => {
   try {
     res.json({ message: (await Task.deleteMany({})).n + " task(s) removed." });
   } catch (e) {

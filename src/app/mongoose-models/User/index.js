@@ -3,6 +3,7 @@ const crypto = require("crypto");
 
 const userSchema = new mongoose.Schema({
   username: { type: String, require: true },
+  sessionCode: { type: String },
   hash: String,
   salt: String,
 });
@@ -14,5 +15,8 @@ userSchema.methods.setPassword = function (password) {
 userSchema.methods.validPassword = function (password) {
   var hash = crypto.pbkdf2Sync(password.toString(), this.salt, 1000, 64, `sha512`).toString(`hex`);
   return this.hash === hash;
+};
+userSchema.methods.setSessionCode = function () {
+  this.sessionCode = crypto.randomBytes(16).toString("hex");
 };
 const User = (module.exports = mongoose.model("User", userSchema));
