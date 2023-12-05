@@ -107,31 +107,31 @@ describe("Task Management API", () => {
     expect(res.body.nMatched).toBe(3);
     expect(res.body.nModified).toBe(3);
   });
-  it("responds to get requests at /task-api/removetask/:id with an appropriate message", async () => {
+  it("responds to post requests at /task-api/removetask/:id with an appropriate message", async () => {
     const idToRemove = tasksToPreloadToDB[0]._id.toString();
     const res = await request(app)
-      .get("/task-api/removetask/" + idToRemove)
+      .post("/task-api/removetask/" + idToRemove)
       .set("Content-Type", "application/x-www-form-urlencoded");
     const res2 = await request(app)
-      .get("/task-api/removetask/" + idToRemove)
+      .post("/task-api/removetask/" + idToRemove)
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body.message).toBe(idToRemove + " deleted successfully!");
     expect(res2.body.message).toBe(idToRemove + " was not found.");
   });
-  it("responds to get requests at /task-api/task/:id with an appropriate message or task object", async () => {
+  it("responds to post requests at /task-api/task/:id with an appropriate message or task object", async () => {
     const idToGet = tasksToPreloadToDB[0]._id.toString();
     const invalidIdToGet = "655e5b359862131b75591e64";
     const expectedRes = { ...tasksToPreloadToDB[0], _id: idToGet };
     const res = await request(app)
-      .get("/task-api/task/" + idToGet)
+      .post("/task-api/task/" + idToGet)
       .set("Content-Type", "application/x-www-form-urlencoded");
     const res2 = await request(app)
-      .get("/task-api/task/" + invalidIdToGet)
+      .post("/task-api/task/" + invalidIdToGet)
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body).toEqual(expectedRes);
     expect(res2.body.message).toBe("No task found match id: '" + invalidIdToGet + "'");
   });
-  it("responds to get requests at /task-api/tasklist with an array of all tasks in the db", async () => {
+  it("responds to post requests at /task-api/tasklist with an array of all tasks in the db", async () => {
     const expectedRes = tasksToPreloadToDB.map((task) => {
       return {
         data: { ...task.data },
@@ -140,13 +140,13 @@ describe("Task Management API", () => {
       };
     });
     const res = await request(app)
-      .get("/task-api/tasklist")
+      .post("/task-api/tasklist")
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body).toEqual(expectedRes);
   });
   it("responds to get requests at /task-api/cleartasks with an appropriate message", async () => {
     const res = await request(app)
-      .get("/task-api/cleartasks")
+      .post("/task-api/cleartasks")
       .set("Content-Type", "application/x-www-form-urlencoded");
     expect(res.body.message).toEqual(tasksToPreloadToDB.length + " task(s) removed.");
     expect(await Task.find({})).toEqual([]);

@@ -4,12 +4,10 @@ const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
 const Task = require("mongoose-models/Task");
-const { validateSession } = require("helper/functions");
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
-app.use("/task-api", validateSession);
 
 const getDataFromInputs = (inputs) => {
   let { name, description, status, priority } = JSON.parse(inputs.data);

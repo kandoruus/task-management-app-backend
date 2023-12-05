@@ -1,11 +1,15 @@
 //set up app
 const express = require("express");
 const app = express();
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/src/pages/index.html");
 });
 //import modules
+const { validateSession } = require("helper/functions");
 const taskApi = require("task-api");
+app.use("/task-api", validateSession);
 app.use(taskApi);
 const userApi = require("user-api");
 app.use(userApi);
