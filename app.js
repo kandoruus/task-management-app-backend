@@ -7,12 +7,17 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/src/pages/index.html");
 });
 //import modules
-const { validateSession } = require("helper/functions");
 const taskApi = require("task-api");
-app.use("/task-api", validateSession);
-app.use(taskApi);
 const userApi = require("user-api");
+const punchApi = require("punch-api");
+//apply middleware
+const { validateSession } = require("helper/functions");
+app.use("/task-api", validateSession);
+app.use("/punch-api", validateSession);
+//connect to modules
+app.use(taskApi);
 app.use(userApi);
+app.use(punchApi);
 //connect to database
 const mongoose = require("mongoose");
 mongoose.connect(process.env.MONGO_URI_APP, {
