@@ -1,7 +1,10 @@
 //reference: https://stackoverflow.com/questions/8737082/mongoose-schema-within-schema
 const mongoose = require("mongoose");
 
-const isDateString = [(string) => !isNaN(Date.parse(string)), '"{VALUE}" is not a valid date.'];
+const isDateString = [
+  (string) => new Date(parseInt(string)).toString() !== "Invalid Date",
+  '"{VALUE}" is not a valid date.',
+];
 
 const punchSchema = new mongoose.Schema({
   punchIn: {
