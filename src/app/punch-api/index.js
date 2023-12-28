@@ -15,7 +15,7 @@ app.post("/punch-api/punch-in", async (req, res) => {
     const { punchIn, taskId, userId } = req.body;
     return res.status(201).send({
       message: "Punched in successfully.",
-      id: await Punch.create({ punchIn, userId, taskId }),
+      id: (await Punch.create({ punchIn, userId, taskId }))._id,
     });
   } catch (e) {
     return res.status(400).send({ message: e.message });
@@ -30,6 +30,18 @@ app.post("/punch-api/punch-out", async (req, res) => {
     } else {
       return res.status(201).send({ message: "Punched out successfully." });
     }
+  } catch (e) {
+    return res.status(400).send({ message: e.message });
+  }
+});
+
+app.post("/punch-api/user-punchlist", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    return res.status(201).json({
+      message: "Punchlist successfully fetched",
+      punchlist: await Punch.find({ userId: userId }),
+    });
   } catch (e) {
     return res.status(400).send({ message: e.message });
   }
