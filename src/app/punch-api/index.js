@@ -15,7 +15,7 @@ app.post("/punch-api/punch-in", async (req, res) => {
     const { punchIn, taskId, userId } = req.body;
     return res.status(201).send({
       message: "Punched in successfully.",
-      id: (await Punch.create({ punchIn, userId, taskId }))._id,
+      id: (await Punch.create({ punchIn: parseInt(punchIn), userId, taskId }))._id,
     });
   } catch (e) {
     return res.status(400).send({ message: e.message });
@@ -49,8 +49,12 @@ app.post("/punch-api/user-punchlist", async (req, res) => {
 
 app.post("/punch-api/update-punch", async (req, res) => {
   try {
-    const { id, updates } = req.body;
-    if ((await Punch.findByIdAndUpdate(id, { ...JSON.parse(updates) }, updateOpts)) === null) {
+    const { id, punchIn, punchOut, taskId } = req.body;
+    let updatedData = { punchIn: parseInt(punchIn), taskId };
+    if (punchOut !== undefined) {
+      updatedData.punchOut = parseInt(punchOut);
+    }
+    if ((await Punch.findByIdAndUpdate(id, updatedData, updateOpts)) === null) {
       throw new Error('No punch with id: "' + id + '" found.');
     } else {
       return res.status(201).send({ message: "Punch updated successfully." });
