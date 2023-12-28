@@ -57,6 +57,7 @@ app.post("/user-api/login", async (req, res) => {
           return res.status(201).send({
             message: "Welcome " + username + "!",
             username: username,
+            userId: user._id,
             sessionCode: user.sessionCode,
           });
         }

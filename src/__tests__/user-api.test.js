@@ -73,6 +73,7 @@ describe("User API", () => {
       const res = await postLogin({ username: existingUsername, password: existingUsersPassword });
       expect(res.body.message).toBe("Welcome " + existingUsername + "!");
       expect(res.body.username).toBe(existingUsername);
+      expect(res.body.userId).not.toBeNull();
     });
     it("responds with the appropriate error message when the username is invalid", async () => {
       const res = await postLogin({ username: invalidUsername, password: existingUsersPassword });
