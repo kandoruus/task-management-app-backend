@@ -90,6 +90,86 @@ describe("Punch API", () => {
   afterAll(async () => {
     await mongoose.connection.close();
   });
+  describe("when it receives post requests at create-punch", () => {
+    const postCreatePunch = (payload) => postWithHeaders("create-punch", payload);
+    it("sends the expected success message when all request inputs are defined and valid", async () => {
+      const res = await postCreatePunch({
+        punchIn: validPunchIn,
+        punchOut: validPunchOut,
+        taskId: validTaskId1,
+        userId: validUserId1,
+      });
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe("Punched created successfully.");
+      expect(res.body.id).not.toBe(undefined);
+    });
+    it("sends the expected success message when all request inputs are valid and punchout is undefined", async () => {
+      const res = await postCreatePunch({
+        punchIn: validPunchIn,
+        taskId: validTaskId1,
+        userId: validUserId1,
+      });
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe("Punched created successfully.");
+      expect(res.body.id).not.toBe(undefined);
+    });
+    it("sends the expected error message when punchin is invalid", async () => {
+      const res = await postCreatePunch({
+        punchIn: invalidPunchIn,
+        punchOut: validPunchOut,
+        taskId: validTaskId1,
+        userId: validUserId1,
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe(
+        'Punch validation failed: punchIn: Cast to Number failed for value "NaN" (type number) at path "punchIn"'
+      );
+      expect(res.body.id).toBe(undefined);
+    });
+    it("sends the expected error message when punchout is invalid", async () => {
+      const res = await postCreatePunch({
+        punchIn: validPunchIn,
+        punchOut: invalidPunchOut,
+        taskId: validTaskId1,
+        userId: validUserId1,
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe(
+        'Punch validation failed: punchOut: Cast to Number failed for value "NaN" (type number) at path "punchOut"'
+      );
+      expect(res.body.id).toBe(undefined);
+    });
+    it("sends the expected error message when taskid is invalid", async () => {
+      const res = await postCreatePunch({
+        punchIn: validPunchIn,
+        punchOut: validPunchOut,
+        taskId: invalidTaskId,
+        userId: validUserId1,
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe(
+        'Punch validation failed: taskId: Cast to ObjectId failed for value "' +
+          invalidTaskId +
+          '" (type string) at path "taskId"'
+      );
+      expect(res.body.id).toBe(undefined);
+    });
+    it("sends the expected error message when userid is invalid", async () => {
+      const res = await postCreatePunch({
+        punchIn: validPunchIn,
+        punchOut: validPunchOut,
+        taskId: validTaskId1,
+        userId: invalidUserId,
+      });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe(
+        'Punch validation failed: userId: Cast to ObjectId failed for value "' +
+          invalidUserId +
+          '" (type string) at path "userId"'
+      );
+      expect(res.body.id).toBe(undefined);
+    });
+  });
   describe("when it receives post requests at punch-in", () => {
     const postPunchIn = (payload) => postWithHeaders("punch-in", payload);
     it("sends the expected success message when all request inputs are valid", async () => {
@@ -111,7 +191,7 @@ describe("Punch API", () => {
       expect(res.status).toBe(400);
       expect(res.body.id).toBe(undefined);
       expect(res.body.message).toBe(
-        'Punch validation failed: punchIn: "' + invalidPunchIn + '" is not a valid date.'
+        'Punch validation failed: punchIn: Cast to Number failed for value "NaN" (type number) at path "punchIn"'
       );
     });
     it("sends the expected error message when the taskId input is invalid", async () => {
@@ -178,7 +258,24 @@ describe("Punch API", () => {
       });
       expect(res.status).toBe(400);
       expect(res.body.message).toBe(
-        'Validation failed: punchOut: "' + invalidPunchOut + '" is not a valid date.'
+        'Cast to Number failed for value "' + invalidPunchOut + '" (type string) at path "punchOut"'
+      );
+    });
+  });
+  describe("when it receives post requests at user-punchlist", () => {
+    const postUserPunchlist = (payload) => postWithHeaders("user-punchlist", payload);
+    it("sends the expected success message when all request inputs are valid", async () => {
+      const res = await postUserPunchlist({ userId: validUserId1 });
+      expect(res.status).toBe(201);
+      expect(res.body.message).toBe("Punchlist successfully fetched.");
+    });
+    it("sends the expected error message when the userID is invalid", async () => {
+      const res = await postUserPunchlist({ userId: invalidUserId });
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe(
+        'Cast to ObjectId failed for value "' +
+          invalidUserId +
+          '" (type string) at path "userId" for model "Punch"'
       );
     });
   });
@@ -187,11 +284,9 @@ describe("Punch API", () => {
     it("sends the expected success message when all request inputs are valid", async () => {
       const res = await postUpdatePunch({
         id: existingPunches[0]._id.toString(),
-        updates: JSON.stringify({
-          punchIn: validPunchIn2,
-          taskId: validTaskId2,
-          punchOut: validPunchOut2,
-        }),
+        punchIn: validPunchIn2,
+        taskId: validTaskId2,
+        punchOut: validPunchOut2,
       });
       expect(res.status).toBe(201);
       expect(res.body.message).toBe("Punch updated successfully.");
@@ -199,11 +294,9 @@ describe("Punch API", () => {
     it("sends the expected error message when the id is invalid", async () => {
       const res = await postUpdatePunch({
         id: invalidPunchId,
-        updates: JSON.stringify({
-          punchIn: validPunchIn2,
-          taskId: validTaskId2,
-          punchOut: validPunchOut2,
-        }),
+        punchIn: validPunchIn2,
+        taskId: validTaskId2,
+        punchOut: validPunchOut2,
       });
       expect(res.status).toBe(400);
       expect(res.body.message).toBe(
@@ -215,55 +308,47 @@ describe("Punch API", () => {
     it("sends the expected error message when id is valid, but not in the database", async () => {
       const res = await postUpdatePunch({
         id: validPunchId,
-        updates: JSON.stringify({
-          punchIn: validPunchIn2,
-          taskId: validTaskId2,
-          punchOut: validPunchOut2,
-        }),
+        punchIn: validPunchIn2,
+        taskId: validTaskId2,
+        punchOut: validPunchOut2,
       });
       expect(res.status).toBe(400);
       expect(res.body.message).toBe('No punch with id: "' + validPunchId + '" found.');
     });
-    it("sends the expected error message when punchIn is inValid", async () => {
+    it("sends the expected error message when punchIn is invalid", async () => {
       const res = await postUpdatePunch({
         id: validPunchId,
-        updates: JSON.stringify({
-          punchIn: invalidPunchId,
-          taskId: validTaskId2,
-          punchOut: validPunchOut2,
-        }),
+        punchIn: invalidPunchIn,
+        taskId: validTaskId2,
+        punchOut: validPunchOut2,
       });
       expect(res.status).toBe(400);
       expect(res.body.message).toBe(
-        'Validation failed: punchIn: "' + invalidPunchId + '" is not a valid date.'
+        'Cast to Number failed for value "NaN" (type number) at path "punchIn"'
       );
     });
-    it("sends the expected error message when taskId is inValid", async () => {
+    it("sends the expected error message when taskId is invalid", async () => {
       const res = await postUpdatePunch({
         id: validPunchId,
-        updates: JSON.stringify({
-          punchIn: validPunchIn2,
-          taskId: invalidTaskId,
-          punchOut: validPunchOut2,
-        }),
+        punchIn: validPunchIn2,
+        taskId: invalidTaskId,
+        punchOut: validPunchOut2,
       });
       expect(res.status).toBe(400);
       expect(res.body.message).toBe(
         'Cast to ObjectId failed for value "' + invalidTaskId + '" (type string) at path "taskId"'
       );
     });
-    it("sends the expected error message when taskId is inValid", async () => {
+    it("sends the expected error message when punchOut is invalid", async () => {
       const res = await postUpdatePunch({
         id: validPunchId,
-        updates: JSON.stringify({
-          punchIn: validPunchIn2,
-          taskId: validTaskId2,
-          punchOut: invalidPunchOut,
-        }),
+        punchIn: validPunchIn2,
+        taskId: validTaskId2,
+        punchOut: invalidPunchOut,
       });
       expect(res.status).toBe(400);
       expect(res.body.message).toBe(
-        'Validation failed: punchOut: "' + invalidPunchOut + '" is not a valid date.'
+        'Cast to Number failed for value "NaN" (type number) at path "punchOut"'
       );
     });
   });
