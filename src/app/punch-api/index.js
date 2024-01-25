@@ -10,6 +10,22 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static("public"));
 
+app.post("/punch-api/create-punch", async (req, res) => {
+  try {
+    const { punchIn, punchOut, taskId, userId } = req.body;
+    let punchData = { taskId, userId, punchIn: parseInt(punchIn) };
+    if (punchOut != undefined) {
+      punchData = { ...punchData, punchOut: parseInt(punchOut) };
+    }
+    return res.status(201).send({
+      message: "Punched created successfully.",
+      id: (await Punch.create(punchData))._id,
+    });
+  } catch (e) {
+    return res.status(400).send({ message: e.message });
+  }
+});
+
 app.post("/punch-api/punch-in", async (req, res) => {
   try {
     const { punchIn, taskId, userId } = req.body;
@@ -39,7 +55,7 @@ app.post("/punch-api/user-punchlist", async (req, res) => {
   try {
     const { userId } = req.body;
     return res.status(201).json({
-      message: "Punchlist successfully fetched",
+      message: "Punchlist successfully fetched.",
       punchlist: await Punch.find({ userId: userId }),
     });
   } catch (e) {
