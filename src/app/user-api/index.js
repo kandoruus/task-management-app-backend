@@ -16,7 +16,7 @@ app.post("/user-api/signup", async (req, res) => {
   const { username, password } = req.body;
   if ((await User.findOne({ username: username })) !== null) {
     res.status(400).send({ message: "The username " + username + " is already taken." });
-  } else if (password.length < 9) {
+  } else if (password.length < 8) {
     res.status(400).send({ message: "The password must be at least 8 characters long." });
   } else if (username.length < 3) {
     res.status(400).send({ message: "The username must be at least 3 characters long." });
